@@ -11,25 +11,35 @@ rownames(Data)
 Data[grep(pattern = paste0("F",1,"-[1-9]"), rownames(Data)),] %>% rownames()
 Data[grep(rownames(Data), pattern = paste0("^",1,"-[0-9]")),] %>% rownames()
 
-for (i in c(1:10)){
+for (i in c(1:10)) {
   # Select the data corresponding to fulvic acid exposure and non-exposed
-  Ful   <- Data[grep(pattern = paste0("F",i,"-[1-9]"), rownames(Data)),]
-  NoFul <- Data[grep(pattern = paste0("^",i,"-[0-9]"), rownames(Data)),]
+  Ful   <-
+    Data[grep(pattern = paste0("F", i, "-[1-9]"), rownames(Data)), ]
+  NoFul <-
+    Data[grep(pattern = paste0("^", i, "-[0-9]"), rownames(Data)), ]
   # Calculate the differences of the medians and the mean values of the non-exposed samples
-  Diff <-  apply(Ful, FUN = median, MARGIN = 2) - apply(NoFul, FUN = median, MARGIN = 2)
+  Diff <-
+    apply(Ful, FUN = median, MARGIN = 2) - apply(NoFul, FUN = median, MARGIN = 2)
   Means <- apply(NoFul, FUN = mean , MARGIN = 2)
   # Select the significant (>95%) differences and normalize them
-  for (j in 1:length(Diff)){
-    if (t.test(Ful[[j]], NoFul[[j]])$p.value > 0.05){Diff[[j]] <- NA}
-    else {Diff[[j]] <- Diff[[j]]/Means[[j]]
-    # Make a list of masses whose intensites incresed significantly 
-    if (Diff[[j]] > 0){Increased_Masses <- c(Increased_Masses, names(Diff)[[j]])}
+  for (j in 1:length(Diff)
+       ) {
+    if (t.test(Ful[[j]], NoFul[[j]])$p.value > 0.05) {
+      Diff[[j]] <- NA
+    }
+    else {
+      Diff[[j]] <- Diff[[j]] / Means[[j]]
+      # Make a list of masses whose intensites incresed significantly
+      if (Diff[[j]] > 0) {
+        Increased_Masses <- c(Increased_Masses, names(Diff)[[j]])
+      }
     }
   }
   Diffs[[i]] <- Diff
 }
 names(Diffs) <- paste0("S",1:10)
-# TODO: Why Median difference? What about p.values close to 0.05?
+# TODO: Why Median difference? T.test tests for difference in means
+# What about p.values close to 0.05?
 
 # Remove duplicates in the list of masses whose intensites increased
 Increased_Masses <- Increased_Masses[!duplicated(Increased_Masses)]
