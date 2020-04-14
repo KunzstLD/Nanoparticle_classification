@@ -15,6 +15,7 @@ library(corrr)
 # random forest
 library(rsample)
 library(ranger)
+library(randomForest)
 
 # plotting
 library(ggplot2)
