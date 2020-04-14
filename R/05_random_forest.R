@@ -1,6 +1,7 @@
 #########################################################################
 #####  RANDOM FOREST  ######
-# Need to run 03_differences_in_intensities.R script prior to this script
+# Need to run 03_differences_in_intensities.R script 
+# and 04_correlation_analysis.R prior to this script
 #########################################################################
 
 # Add column indicating presence of fulvic acid
@@ -176,7 +177,7 @@ model1 <-
     fulvic_acid ~ .,
     data = Data_RF_all,
     ntree = length(Data_RF_all)*10,
-    mtry = 27,
+    mtry = 21,
     nodesize = 1,
     importance = T,
     proximity = T
@@ -239,7 +240,7 @@ for (j in 1:length(Diffs_pos)) {
   Indexes <- c(sort(Indexes), which(names(Data_RF) == "fulvic_acid"))
   k <- sub("S", "", names(Diffs_pos)[[j]])
   Data_RF_S <-
-    Data_RF[grep(paste(k, "-", sep = ""), rownames(Data_RF)), Indexes]
+    Data_RF[grep(paste(k, "\\-", sep = ""), rownames(Data_RF)), Indexes]
   Results_RF_Extracts[[j]] <-  RF(Data_RF_S, label = paste0("S", k))
   Importance_plots[[j]] <- Results_RF_Extracts[[j]]$plot_importance
 }
