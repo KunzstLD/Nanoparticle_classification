@@ -5,6 +5,14 @@
 *.Rproj
 *.png
 
-R/Old_scripts/
+# Anything data related
+Raw_data/
 
-Data/
+Cache/
+
+Output/
+
+Plots/
+
+# VC related
+.vscode/

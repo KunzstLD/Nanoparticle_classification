@@ -1,28 +1,46 @@
-############################
-##  CORRELATION ANALYSIS  ##
-############################
+# ___________________________________________________________________________
+#  CORRELATION ANALYSIS  ----
+# TODO: 
+# - Correlation analysis with Hclust or similar?
+# ___________________________________________________________________________
 
-# Remove S2 (no increased masses)
-Diffs_pos$S2 <- NULL
+# Read in nanoparticle masses and Diffs file (significant differences between certain masses)
+Masses <- readRDS(file.path(data_cache, "Masses.rds"))
+Diffs <- readRDS(file.path(data_cache, "Diffs.rds"))
 
-# Build a list of network plots
-list_plot <- list()
-for (i in c(1:length(Diffs_pos))){
+Output_cormat <- list()
+for (i in names(Diffs)[c(2, 3, 4)]) {
   # Determine the correlation matrix for the increased masses of the sample in the whole data set
-  Cor.matrix <- cor(Data[,names(Diffs_pos[[i]])], method = "pearson")
-  colnames(Cor.matrix) <- sub("_",".",sub("Mass_","",colnames(Cor.matrix)))
-  rownames(Cor.matrix) <- sub("_",".",sub("Mass_","",rownames(Cor.matrix)))
-  # Save the network plot
-  list_plot[[i]] <- network_plot(Cor.matrix,min_cor = 0.7,repel = T)+
-    theme(legend.text = element_text(size = 16, face = "bold"),
-          legend.key.size = unit(1.3, "cm"))
+  Cor_matrix <-
+    Masses[, Diffs[[i]]$`Increased masses`] %>% cor(., method = "pearson") %>%
+    as.data.frame(.)
+  colnames(Cor_matrix) <-
+    Cor_matrix %>% colnames(.) %>% sub("Mass_", "", .) %>% sub("_", "", .)
+  rownames(Cor_matrix) <-
+    Cor_matrix %>% rownames(.) %>% sub("Mass_", "", .) %>% sub("_", "", .)
+  Output_cormat[[i]] <- Cor_matrix
 }
-ggpubr::ggarrange(plotlist = list_plot,
-                  ncol = 2, nrow = 5,
-                  font.label = list(size = 26, face = "bold", color = "darkred"),
-                  labels = names(Diffs_pos),
-                  legend = "top",
-                  common.legend = T)
+Output_cormat[[1]]
 
-#Clean up
-rm(i,Cor.matrix,list_plot)
+# Correlation plot for specific masses
+# Choose only masses that have high positive correlations (> 0.9), 
+# here at least 50 out of 281 (for F3-3)
+high <- apply(Output_cormat$`F3-3`, 2, function(y)
+  sum(y > 0.9)) %>%
+  .[. >= 50] %>%
+  names(.)
+
+f3_cor_matrix <- as.matrix(Output_cormat$`F3-3`)
+
+png(
+  filename = file.path(data_out, "example_corr_plot.png"),
+)
+corrplot::corrplot(
+  as.matrix(f3_cor_matrix[high, high]),
+  method = "color",
+  type = "lower",
+  tl.col = "black",
+  tl.cex = .7,
+  order = "hclust"
+)
+dev.off()

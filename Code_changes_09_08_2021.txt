@@ -1,0 +1,36 @@
+GENERAL:
+        - Created Script Set_up.R for loading libraries, paths and functions.R script
+        - Created a functions.R script where all functions used during data analysis are stored
+	- Created Run.R, a script to source (i.e. run) other scripts. This script must be run in the beginning before running any other script (or alternatively the Set_up.R script)
+        - Added to all scripts saveRDS and readRDS to save and read intermediate files
+
+01_data-processing.R:
+        - Changed variable "Data" to variable "Masses"
+        - line 99: Added a line to save the R object "Masses" as a RDS file (= compressed R object). Created a folder Cache where to store the object.
+        - Removed clean up part (line 97 ff.)
+
+ TODO:
+        -> Line 17: Remove commented code?
+        -> Line 34: Improve description
+
+
+02_cluster_analysis.R:
+        - Simplified subset of "Masses" (line 9 ff.)
+        - Changed "Data_Clust" to "Masses_clust"
+	- Added different version of dendrogram with coloring according to the samples
+
+03_differences_in_intensities.R:
+        - Line 18 ff.: Removed unneccessary code ("which" and "== T" not needed)
+
+04_correlation_analysis.R:
+        - Changed "Masses[, Diffs[[i]][[2]]]" to "Masses[, Diffs[[i]]$`Increased masses`]"
+        and added transformation to data.frame ("as.data.frame()")
+        - Small changes to the for loop for determining the correlation matrix
+        - Removed network plot code and added an example with corrplot()
+
+05_random_forest.R:
+        - Simplified for loop:
+                - for loop loops across sample names now
+                - Sample selection made clearer
+                - Variable importance outputs as pngs
+~                                                                 
