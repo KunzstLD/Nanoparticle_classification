@@ -54,3 +54,13 @@ for (Sample in Samples_names) {
   dev.off()
 }
 saveRDS(object = Results_RF_Extracts, file = file.path(data_out, "RF_results.rds"))
+
+
+
+
+
+
+
+
+
+

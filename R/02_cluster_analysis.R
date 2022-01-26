@@ -82,7 +82,6 @@ plot <- ggplot() +
 ggplotly(plot, tooltip = "text")
 
 
-
 # ___________________________________________________________________________
 #  K-MEDiOIDS CLUSTERING -----
 # ___________________________________________________________________________
@@ -127,7 +126,8 @@ p <- factoextra::fviz_cluster(
   main = "",
   xlab = F,
   ylab = F,
-  ggtheme = theme_void(base_size = 0)
+  ggtheme = theme_void(base_size = 0),
+  max.overlaps = 1000
 )
 p + theme(axis.line = element_blank(),
           legend.position = c(0.2,0.5), legend.direction = "horizontal", legend.title = element_blank(),
