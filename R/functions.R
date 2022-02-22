@@ -4,9 +4,9 @@
 
 ## Data processing ----
 # Function to import and prepare the data to be combined including normalization
-Import <- function(X, Normalization = "") {
+Import <- function(X, Normalization = "", path) {
   Data <- lapply(X, function(y) {
-    fread(file = file.path(data_in,
+    fread(file = file.path(path,
                            y))
   }) %>%
     # Bind list by position
@@ -30,7 +30,7 @@ Import <- function(X, Normalization = "") {
     c("", ., "Background") %>%
     paste0(Y, .)
   #Remove m/z rows
-  Data <- Data[-which(Data[1] == "m/z"), ]
+  Data <- Data[-which(Data[1] == "m/z"),]
   #Rownames sample - replicate id
   rownames(Data) <- Data[[1]] %>%
     gsub(".*@", "", .) %>%
@@ -46,13 +46,13 @@ Import <- function(X, Normalization = "") {
   if (Normalization == "Sum") {
     #With sum of all peaks' intensities
     for (i in 1:length(Data[[1]])) {
-      Data[i, ] <- Data[i, ] / mean(t(Data[i, ]))
+      Data[i,] <- Data[i,] / mean(t(Data[i,]))
     }
   }
   if (Normalization == "Backg") {
     #with background intensity
     for (i in 1:length(Data[[1]])) {
-      Data[i, ] <- Data[i, ] / Backg[[1]][[i]]
+      Data[i,] <- Data[i,] / Backg[[1]][[i]]
     }
   }
   return(Data)

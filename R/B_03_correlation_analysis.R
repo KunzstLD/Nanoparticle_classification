@@ -1,7 +1,5 @@
 # ___________________________________________________________________________
 #  CORRELATION ANALYSIS  ----
-# TODO: 
-# - Correlation analysis with Hclust or similar?
 # ___________________________________________________________________________
 
 # Read in nanoparticle masses and Diffs file (significant differences between certain masses)

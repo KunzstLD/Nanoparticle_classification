@@ -19,6 +19,7 @@ library(corrr)
 
 # clustering
 library(optpart)
+library(cluster)
 
 # plotting
 library(ggplot2)
