@@ -5,9 +5,6 @@
 *.Rproj
 *.png
 
-# Anything data related
-Raw_data/
-
 Output/
 
 Plots/
