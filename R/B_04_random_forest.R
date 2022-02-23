@@ -2,18 +2,18 @@
 #  RANDOM FOREST  ----
 # ___________________________________________________________________________
 
-
 # Read in nanoparticle data
-Masses <- readRDS(file.path(data_cache, "Masses.rds"))
+Masses_B <- readRDS(file.path(data_cache, "Masses_B.rds"))
 Diffs <- readRDS(file.path(data_cache, "Diffs.rds"))
+
 
 Samples_names <- c("3-","4-","9-")
 Results_RF_Extracts <- list()
-for (Sample in Samples_names) {
+for (Sample in ) {
   # Select samples to be processed
-  Inc_masses <-
+  Inc_Masses_B <-
     Diffs[[grep(Sample, names(Diffs))]]$`Increased masses`
-  Data_RF <- Masses[grepl(Sample , rownames(Masses)), Inc_masses]
+  Data_RF <- Masses_B[grepl(Sample , rownames(Masses_B)), Inc_Masses_B]
   
   # Add column indicating presence of fulvic acid
   Data_RF$fulvic_acid <-
@@ -54,13 +54,3 @@ for (Sample in Samples_names) {
   dev.off()
 }
 saveRDS(object = Results_RF_Extracts, file = file.path(data_out, "RF_results.rds"))
-
-
-
-
-
-
-
-
-
-

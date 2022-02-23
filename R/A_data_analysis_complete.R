@@ -2,19 +2,18 @@
 # Analysis A 
 # Presented in one script, might be split up in several scripts later
 # ___________________________________________________________________________
-
-Data <- readRDS(file.path(data_cache, "Data.rds"))
+Masses_A <- readRDS(file.path(data_cache, "Masses_A.rds"))
 
 # ___________________________________________________________________________
 # DIVISIVE CLUSTERING ----
 # ___________________________________________________________________________
 
-# Scale data
-Data_Clust <- scale(Data)
-Data_Clust <- as.data.frame(Data_Clust)
+# Scale Masses_A
+Masses_A_Clust <- scale(Masses_A)
+Masses_A_Clust <- as.data.frame(Masses_A_Clust)
 
 # Building of the divisive clusters
-dist_mat <- dist(Data_Clust, method = 'euclidean')
+dist_mat <- dist(Masses_A_Clust, method = 'euclidean')
 Hclust_div <- cluster::diana(dist_mat)
 
 # Plot the dendrogram
@@ -36,7 +35,7 @@ factoextra::fviz_dend(Hclust_div,
 # Building K-medioids clusters with different number of clusters and optimizing them using silhouette wigth
 optsil_obj <- list()
 for(i in 1:20) {
-  K_medioids <- cluster::pam(Data_Clust, k = i)
+  K_medioids <- cluster::pam(Masses_A_Clust, k = i)
   optsil_obj[[i]] <- optpart::optsil(K_medioids, dist_mat, 100)
   names(optsil_obj)[[i]] <- i
 }
@@ -51,10 +50,10 @@ k <- which(Silhouette_widths == max(Silhouette_widths)) %>%
   as.numeric(.)
 
 # Building K-medioids clusters with k
-K_medioids <- pam(Data_Clust, k=k)
+K_medioids <- pam(Masses_A_Clust, k=k)
 
 # Plot clusters
-p <- fviz_cluster(K_medioids, data = Data_Clust, 
+p <- factoextra::fviz_cluster(K_medioids, data = Masses_A_Clust, 
                   stand = F, 
                   ellipse = T, ellipse.alpha = 0, ellipse.type = "convex",
                   axes = c(1,2),
@@ -74,9 +73,6 @@ p + theme(axis.line = element_blank(),
            size = 6)
 
 
-# Clean up
-rm(i, dist_mat,Silhouette_widths, p,k,optsil_obj,K_medioids)
-
 # ___________________________________________________________________________
 #  DIFFERENCES IN INTENSITIES  ----
 # ___________________________________________________________________________
@@ -86,9 +82,9 @@ Diffs <- list()
 Increased_Masses <- c()
 
 for (i in c(1:10)){
-  # Select the data corresponding to fulvic acid exposure and non-exposed
-  Ful   <- Data[grep(rownames(Data), pattern = paste0("F",i,"-[1-9]")),]
-  NoFul <- Data[grep(rownames(Data), pattern = paste0("^",i,"-[0-9]")),]
+  # Select the Masses_A corresponding to fulvic acid exposure and non-exposed
+  Ful   <- Masses_A[grep(rownames(Masses_A), pattern = paste0("F",i,"-[1-9]")),]
+  NoFul <- Masses_A[grep(rownames(Masses_A), pattern = paste0("^",i,"-[0-9]")),]
   # Calculate the differences of the medians and the mean values of the non-exposed samples
   Diff <-  apply(Ful, FUN = median, MARGIN = 2) - apply(NoFul, FUN = median, MARGIN = 2)
   Means <- apply(NoFul, FUN = mean , MARGIN = 2)
@@ -108,10 +104,11 @@ Increased_Masses <- Increased_Masses[!duplicated(Increased_Masses)]
 
 # Preparing for ploting
 Diff_plot <- data.frame()
-for (i in c(1:length(Diffs))){
-  A <- data_frame(diff = Diffs[[i]], 
-                  mass =  as.numeric(sub("_",".",sub("Mass_", "", names(Diffs[[i]])))),
-                  sample = as.factor(rep(names(Diffs)[[i]], length(Diffs[[i]])))
+for (i in c(1:length(Diffs))) {
+  A <- data.frame(
+    diff = Diffs[[i]],
+    mass = as.numeric(sub("_", ".", sub("Mass_", "", names(Diffs[[i]])))),
+    sample = as.factor(rep(names(Diffs)[[i]], length(Diffs[[i]])))
   )
   Diff_plot <- rbind(Diff_plot, A)
 }
@@ -149,7 +146,7 @@ colnames(Common_masses) <- names(Diffs_pos)
 rownames(Common_masses) <- names(Diffs_pos)
 
 # Export
-write.csv(file = file.path(data_out, "Common masses.csv"), x = Common_masses)
+write.csv(file = file.path(Masses_A_out, "Common masses.csv"), x = Common_masses)
 
 
 # ___________________________________________________________________________
@@ -162,8 +159,8 @@ Diffs_pos$S2 <- NULL
 # Build a list of network plots
 list_plot <- list()
 for (i in c(1:length(Diffs_pos))){
-  # Determine the correlation matrix for the increased masses of the sample in the whole data set
-  Cor.matrix <- cor(Data[,names(Diffs_pos[[i]])], method = "pearson")
+  # Determine the correlation matrix for the increased masses of the sample in the whole Masses_A set
+  Cor.matrix <- cor(Masses_A[,names(Diffs_pos[[i]])], method = "pearson")
   colnames(Cor.matrix) <- sub("_",".",sub("Mass_","",colnames(Cor.matrix)))
   rownames(Cor.matrix) <- sub("_",".",sub("Mass_","",rownames(Cor.matrix)))
   # Save the network plot
@@ -184,21 +181,23 @@ ggpubr::ggarrange(plotlist = list_plot,
 # ___________________________________________________________________________
 
 # Add column indicating presence of fulvic acid
-Data_RF <- cbind(Data, fulvic_acid = as.factor(ifelse(grepl("F", rownames(Data)), 1, 0)))
+Masses_A_RF <- cbind(Masses_A, fulvic_acid = as.factor(ifelse(grepl("F", rownames(Masses_A)), 1, 0)))
 # Remove sample 2 (no sorption)
-Data_RF <- Data_RF[-which(grepl("F2", rownames(Data))),]
+Masses_A_RF <- Masses_A_RF[-which(grepl("F2", rownames(Masses_A))),]
 
 # Remove masses whose intensities decreased
 Indexes <- c()
 # For selecting the masses increasing for that specific sample
 # Increased_Masses <- sub("X","",names(Diffs$S6))
-for (i in Increased_Masses){Indexes <- c(Indexes, which(colnames(Data_RF) == i))}
-Indexes <- c(sort(Indexes),which(names(Data_RF) == "fulvic_acid"))
-Data_RF_all <- Data_RF[,Indexes]
+for (i in Increased_Masses) {
+  Indexes <- c(Indexes, which(colnames(Masses_A_RF) == i))
+}
+Indexes <- c(sort(Indexes), which(names(Masses_A_RF) == "fulvic_acid"))
+Masses_A_RF_all <- Masses_A_RF[, Indexes]
 
 ## Random forest analysis function
 RF <- function(X, seed = 123, mtry_step = 1, label = NULL){
-  # create training and test data set
+  # create training and test Masses_A set
   set.seed(seed)
   split <- initial_split(X, prop = .7, strata = "fulvic_acid")
   X_train <- training(split)
@@ -295,12 +294,12 @@ RF <- function(X, seed = 123, mtry_step = 1, label = NULL){
   
   # plot
   plot_importance <- gridExtra::grid.arrange(p1, p2, nrow = 1)
-  # access vip data 
+  # access vip Masses_A 
   var_imp <- vip::vip(m_ranger_impurity, num_features = 25, geom = NULL)
   RF_masses <- var_imp$data[[1]]
-  #### Predict for the test data ####
+  #### Predict for the test Masses_A ####
   pred_class <- predict(m_ranger_impurity, X_test[, -which(names(X_test) == "fulvic_acid")])
-  # Assess performance on test data
+  # Assess performance on test Masses_A
   Confusion_matrix <- caret::confusionMatrix(factor(pred_class$predictions), 
                                              factor(X_test$fulvic_acid))
   
@@ -311,12 +310,12 @@ RF <- function(X, seed = 123, mtry_step = 1, label = NULL){
   return(O)
 }
 
-## Random forest analysis for complete dataset
-Results_RF_all <- RF(Data_RF_all, mtry_step = 5)
+## Random forest analysis for complete Masses_Aset
+Results_RF_all <- RF(Masses_A_RF_all, mtry_step = 5)
 
-# Plot Proximity map for complete dataset
+# Plot Proximity map for complete Masses_Aset
 library(randomForest)
-model1 <- randomForest(fulvic_acid ~ ., data = Data_RF_all, ntree = 1200, mtry = 21, nodesize = 1, importance = T, proximity = T)
+model1 <- randomForest(fulvic_acid ~ ., Data = Masses_A_RF_all, ntree = 1200, mtry = 21, nodesize = 1, importance = T, proximity = T)
 MDSplot_modified <- function (rf, fac, k = 2, palette = NULL, pch = 20, ...) {
   if (!inherits(rf, "randomForest")) 
     stop(deparse(substitute(rf)), " must be a randomForest object")
@@ -345,19 +344,21 @@ MDSplot_modified <- function (rf, fac, k = 2, palette = NULL, pch = 20, ...) {
   }
   invisible(rf.mds)
 }
-MDSplot_modified(model1, Data_RF_all$fulvic_acid, palette=c("blue","red"), k = 2)
+MDSplot_modified(model1, Masses_A_RF_all$fulvic_acid, palette=c("blue","red"), k = 2)
 
 ## Random forest for each individual sunscreen extract
 Results_RF_Extracts <- list()
 Importance_plots <- list()
-for (j in 1:length(Diffs_pos)){
+for (j in 1:length(Diffs_pos)) {
   Indexes <- c()
-  #Remove masses whose intensities decreased for one sunscreen extract
-  for (i in names(Diffs_pos[[j]])){Indexes <- c(Indexes, which(colnames(Data_RF) == i))}
-  Indexes <- c(sort(Indexes),which(names(Data_RF) == "fulvic_acid"))
-  k <- sub("S","",names(Diffs_pos)[[j]])
-  Data_RF_S <- Data_RF[grep(paste(k,"-",sep = ""),rownames(Data_RF)),Indexes]
-  Results_RF_Extracts[[j]] <-  RF(Data_RF_S, label = paste0("S",k))
+  # Remove masses whose intensities decreased for one sunscreen extract
+  for (i in names(Diffs_pos[[j]])) {
+    Indexes <- c(Indexes, which(colnames(Masses_A_RF) == i))
+  }
+  Indexes <- c(sort(Indexes), which(names(Masses_A_RF) == "fulvic_acid"))
+  k <- sub("S", "", names(Diffs_pos)[[j]])
+  Masses_A_RF_S <- Masses_A_RF[grep(paste(k, "-", sep = ""), rownames(Masses_A_RF)), Indexes]
+  Results_RF_Extracts[[j]] <- RF(Masses_A_RF_S, label = paste0("S", k))
   Importance_plots[[j]] <- Results_RF_Extracts[[j]]$plot_importance
 }
 names(Results_RF_Extracts) <- names(Diffs_pos)

@@ -5,7 +5,7 @@
 # ___________________________________________________________________________
 
 # Read in nanoparticle masses
-Masses <- readRDS(file.path(data_cache, "Masses.rds"))
+Masses_B <- readRDS(file.path(data_cache, "Masses_B.rds"))
 
 # What has to be compared
 Pairs <- data.frame(
@@ -16,8 +16,8 @@ Pairs <- data.frame(
 # Compare
 Diffs <- list()
 for (i in 1:nrow(Pairs)) {
-  X <- Masses[grepl(Pairs$X[i], rownames(Masses)),]
-  Y <- Masses[grepl(Pairs$Y[i], rownames(Masses)),]
+  X <- Masses_B[grepl(Pairs$X[i], rownames(Masses_B)),]
+  Y <- Masses_B[grepl(Pairs$Y[i], rownames(Masses_B)),]
   Diffs[[i]] <- YminusX(X, Y)
 }
 names(Diffs) <- c("blank-wafer","F3-3","F4-4","F9-9","F3blank-3")
@@ -28,8 +28,8 @@ for (i in 2:4) {
             file = file.path(data_out, paste0(
               names(Diffs)[i], "_Significant_differences.csv"
             )))
-  write.csv(Diffs[[i]]$'Increased masses',
-            file = file.path(data_out, paste0(names(Diffs)[i], "_Increased_masses.csv")))
+  write.csv(Diffs[[i]]$'Increased Masses_B',
+            file = file.path(data_out, paste0(names(Diffs)[i], "_Increased_Masses_B.csv")))
 }
 
 # Preparing for plotting
@@ -76,8 +76,3 @@ ggplot(Diff_plot, aes(x = mass, y = diff, color = polarity)) +
 
 # Save R object for differences 
 saveRDS(object = Diffs, file = file.path(data_cache, "Diffs.rds"))
-
-
-
-
-

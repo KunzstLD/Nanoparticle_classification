@@ -3,16 +3,16 @@
 # ___________________________________________________________________________
 
 # Read in nanoparticle masses
-Masses <- readRDS(file.path(data_cache, "Masses.rds"))
+Masses_B_B <- readRDS(file.path(data_cache, "Masses_B.rds"))
 
 # Scale data
-Masses_clust <-
-  Masses[!grepl("wafer-|blank-", rownames(Masses)),] %>%
+Masses_B_clust <-
+  Masses_B[!grepl("wafer-|blank-", rownames(Masses_B)),] %>%
   scale(.) %>%
   as.data.frame(.)
 
 # Building of the divisive clusters
-Hclust_div <- Masses_clust %>%
+Hclust_div <- Masses_B_clust %>%
   dist(., method = 'euclidean') %>%
   cluster::diana(.)
 
@@ -89,9 +89,9 @@ ggplotly(plot, tooltip = "text")
 # Building K-medioids clusters with different number of clusters 
 # and optimizing them using the silhouette width
 optsil_obj <- list()
-dist_mat <- Masses_clust %>% dist(., method = 'euclidean')
+dist_mat <- Masses_B_clust %>% dist(., method = 'euclidean')
 for (i in 1:20) {
-  K_medioids <- cluster::pam(Masses_clust, k = i)
+  K_medioids <- cluster::pam(Masses_B_clust, k = i)
   optsil_obj[[i]] <- optpart::optsil(K_medioids, dist_mat, 100)
   names(optsil_obj)[[i]] <- i
 }
@@ -109,12 +109,12 @@ k <- which(Silhouette_widths == max(Silhouette_widths)) %>%
   as.numeric(.)
 
 # Building K-medioids clusters with k (12)
-K_medioids <- cluster::pam(Masses_clust, k = k)
+K_medioids <- cluster::pam(Masses_B_clust, k = k)
 
 # Plot clusters
 p <- factoextra::fviz_cluster(
   K_medioids,
-  data = Masses_clust,
+  data = Masses_B_clust,
   stand = F,
   ellipse = T,
   ellipse.alpha = 0,

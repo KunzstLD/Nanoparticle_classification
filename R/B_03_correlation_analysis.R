@@ -3,14 +3,14 @@
 # ___________________________________________________________________________
 
 # Read in nanoparticle masses and Diffs file (significant differences between certain masses)
-Masses <- readRDS(file.path(data_cache, "Masses.rds"))
+Masses_B <- readRDS(file.path(data_cache, "Masses_B.rds"))
 Diffs <- readRDS(file.path(data_cache, "Diffs.rds"))
 
 Output_cormat <- list()
 for (i in names(Diffs)[c(2, 3, 4)]) {
-  # Determine the correlation matrix for the increased masses of the sample in the whole data set
+  # Determine the correlation matrix for the increased Masses_B of the sample in the whole data set
   Cor_matrix <-
-    Masses[, Diffs[[i]]$`Increased masses`] %>% cor(., method = "pearson") %>%
+    Masses_B[, Diffs[[i]]$`Increased Masses_B`] %>% cor(., method = "pearson") %>%
     as.data.frame(.)
   colnames(Cor_matrix) <-
     Cor_matrix %>% colnames(.) %>% sub("Mass_", "", .) %>% sub("_", "", .)
@@ -20,8 +20,8 @@ for (i in names(Diffs)[c(2, 3, 4)]) {
 }
 Output_cormat[[1]]
 
-# Correlation plot for specific masses
-# Choose only masses that have high positive correlations (> 0.9), 
+# Correlation plot for specific Masses_B
+# Choose only Masses_B that have high positive correlations (> 0.9), 
 # here at least 50 out of 281 (for F3-3)
 high <- apply(Output_cormat$`F3-3`, 2, function(y)
   sum(y > 0.9)) %>%
