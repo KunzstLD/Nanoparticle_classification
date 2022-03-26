@@ -23,7 +23,7 @@ For reproducing the data analysis. Run first *Set_up.R*. The path to the data mu
 
 ### - /Cache
 
-The *Cache* folder holds intermediate objects created during data analysis
+The *Cache* folder holds intermediate objects created during data analysis.
 
 ### - /Raw_data
 
